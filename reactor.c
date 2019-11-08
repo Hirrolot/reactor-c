@@ -17,7 +17,9 @@ struct reactor {
 };
 
 static int *int_in_heap(int key) {
-    int *result = malloc(sizeof(*result));
+    int *result;
+    if ((result = malloc(sizeof(*result))) == NULL)
+        abort();
     *result = key;
     return result;
 }
@@ -28,7 +30,9 @@ typedef struct {
 } CallbackData;
 
 static CallbackData *callback_data_new(Callback callback, void *arg) {
-    CallbackData *result = malloc(sizeof(*result));
+    CallbackData *result;
+    if ((result = malloc(sizeof(*result))) == NULL)
+        abort();
 
     result->callback = callback;
     result->arg = arg;
