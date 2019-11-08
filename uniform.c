@@ -21,26 +21,26 @@
 #define SERVER_TIMEOUT_MILLIS 1000 * 60
 
 /*
- * Обработчик событий, который вызовется после того, как сокет будет готов
- * принять новое соединение.
+ * Обработчик событий, который вызовется после того, как сокет будет
+ * готов принять новое соединение.
  */
 static void on_accept(void *arg, int fd, uint32_t events);
 
 /*
- * Обработчик событий, который вызовется после того, как сокет будет готов
- * отправить HTTP ответ.
+ * Обработчик событий, который вызовется после того, как сокет будет
+ * готов отправить HTTP ответ.
  */
 static void on_send(void *arg, int fd, uint32_t events);
 
 /*
- * Печатает переданные аргументы в stderr и выходит из процесса с кодом
- * `EXIT_FAILURE`.
+ * Печатает переданные аргументы в stderr и выходит из процесса с
+ * кодом `EXIT_FAILURE`.
  */
 static noreturn void fail(const char *format, ...);
 
 /*
- * Возвращает файловый дескриптор сокета, способного принимать новые TCP
- * соединения.
+ * Возвращает файловый дескриптор сокета, способного принимать новые
+ * TCP соединения.
  */
 static int new_server(void);
 
@@ -105,14 +105,12 @@ static int new_server(void) {
         -1)
         fail("socket");
 
-    struct sockaddr_in server_addr = {
-        .sin_family = AF_INET,
-        .sin_port = htons(SERVER_PORT),
-        .sin_addr = {.s_addr = inet_addr(SERVER_IPV4)},
-        .sin_zero = {0}};
+    struct sockaddr_in addr = {.sin_family = AF_INET,
+                               .sin_port = htons(SERVER_PORT),
+                               .sin_addr = {.s_addr = inet_addr(SERVER_IPV4)},
+                               .sin_zero = {0}};
 
-    if (bind(server, (struct sockaddr *)&server_addr, sizeof(server_addr)) ==
-        -1)
+    if (bind(server, (struct sockaddr *)&addr, sizeof(addr)) == -1)
         fail("bind");
 
     if (listen(server, SERVER_BACKLOG) == -1)
