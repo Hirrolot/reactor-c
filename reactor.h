@@ -13,7 +13,7 @@ typedef void (*Callback)(void *arg, int fd, uint32_t events);
 typedef struct reactor Reactor;
 
 /*
- * Возвращает `NULL` в случае с ошибки, не-`NULL` указатель на `Reactor` в
+ * Возвращает `NULL` в случае ошибки, не-`NULL` указатель на `Reactor` в
  * противном случае.
  */
 Reactor *reactor_new(void);
