@@ -13,7 +13,7 @@
 
 struct reactor {
     int epoll_fd;
-    GHashTable *table;
+    GHashTable *table; // (int, CallbackData)
 };
 
 static int *int_in_heap(int key) {
