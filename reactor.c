@@ -40,7 +40,7 @@ static CallbackData *callback_data_new(Callback callback, void *arg) {
     return result;
 }
 
-//**********************************************************************
+//************************************************************
 
 Reactor *reactor_new(void) {
     Reactor *reactor;
@@ -77,7 +77,7 @@ int reactor_destroy(Reactor *reactor) {
     return 0;
 }
 
-//**********************************************************************
+//************************************************************
 
 #define REACTOR_CTL(reactor, op, fd, interest)                                 \
     if (epoll_ctl(reactor->epoll_fd, op, fd,                                   \
@@ -109,7 +109,7 @@ int reactor_reregister(const Reactor *reactor, int fd, uint32_t interest,
     return 0;
 }
 
-//**********************************************************************
+//************************************************************
 
 int reactor_run(const Reactor *reactor, time_t timeout) {
     int result;
