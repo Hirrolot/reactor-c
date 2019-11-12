@@ -57,3 +57,4 @@ dkms.conf
 # The binary files
 http_server
 http_server_multithreaded
+http_server_multithreaded_pinned
