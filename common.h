@@ -139,7 +139,6 @@ static void on_recv(void *arg, int fd, uint32_t events) {
 
     // Клиент оборвал соединение
     if (nread == 0) {
-        printf("A client has unexpectedly closed the connection!\n");
         SAFE_CALL(reactor_deregister(reactor, fd), -1);
         SAFE_CALL(close(fd), -1);
         request_buffer_destroy(buffer);
