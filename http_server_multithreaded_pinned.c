@@ -42,4 +42,8 @@ int main(void) {
                       0,
                   false);
     }
+
+    for (int i = 0; i < LOGICAL_CORES; i++) {
+        SAFE_CALL(pthread_join(threads[i], NULL) == 0, false);
+    }
 }
