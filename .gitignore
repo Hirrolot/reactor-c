@@ -53,3 +53,7 @@ dkms.conf
 
 # Vs Code
 .vscode/
+
+# The binary files
+http_server
+http_server_multithreaded
