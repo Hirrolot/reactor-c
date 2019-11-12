@@ -33,7 +33,7 @@
 
 #define SAFE_CALL(call, error)                                                 \
     do {                                                                       \
-        if (call == error) {                                                   \
+        if ((call) == error) {                                                   \
             fail("%s", #call);                                                 \
         }                                                                      \
     } while (false)
