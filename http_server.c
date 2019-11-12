@@ -24,7 +24,7 @@
 #define REQUEST_BUFFER_CAPACITY 1024
 
 #define CRLF "\r\n"
-#define DOUBLE_CRLF (CRLF CRLF)
+#define DOUBLE_CRLF CRLF CRLF
 #define DOUBLE_CRLF_LEN strlen(DOUBLE_CRLF)
 
 #define SAFE_CALL(call, error)                                                 \
@@ -54,7 +54,9 @@ static void on_send(void *arg, int fd, uint32_t events);
  */
 static void on_recv(void *arg, int fd, uint32_t events);
 
-// Переводит входящее соединение в неблокирующий режим.
+/*
+ * Переводит входящее соединение в неблокирующий режим.
+ */
 static void set_nonblocking(int fd);
 
 /*
@@ -147,6 +149,7 @@ static void on_recv(void *arg, int fd, uint32_t events) {
     if (nread == 0) {
         printf("A client has unexpectedly closed the connection!\n");
         SAFE_CALL(reactor_deregister(reactor, fd), -1);
+        SAFE_CALL(close(fd), -1);
         request_buffer_destroy(buffer);
         return;
     }
@@ -158,7 +161,7 @@ static void on_recv(void *arg, int fd, uint32_t events) {
         fail("read");
     }
 
-    // Получен полный HTTP запрос от клиента. Теперь регистрируем обработчик
+    // Получен полный HTTP запрос от клиента. Теперь регистрируем обработчика
     // событий для отправки данных
     if (request_buffer_is_complete(buffer)) {
         SAFE_CALL(reactor_reregister(reactor, fd, EPOLLOUT, on_send, NULL), -1);
@@ -172,13 +175,14 @@ static void on_send(void *arg, int fd, uint32_t events) {
                           "ohwl23va3b-dioerobq_mbx4xaw.jpeg\">";
     char response[1024];
     sprintf(response,
-            "HTTP/1.1 200 OK\r\nContent-Length: %zd\r\nContent-Type: "
-            "text/html\r\nConnection: Closed\r\n\r\n%s",
+            "HTTP/1.1 200 OK" CRLF "Content-Length: %zd" CRLF "Content-Type: "
+            "text/html" DOUBLE_CRLF "%s",
             strlen(content), content);
 
     SAFE_CALL(send(fd, response, strlen(response), 0), -1);
-    SAFE_CALL(reactor_deregister(reactor, fd), -1);
-    SAFE_CALL(close(fd), 1);
+    SAFE_CALL(
+        reactor_reregister(reactor, fd, EPOLLIN, on_recv, request_buffer_new()),
+        -1);
 }
 
 //************************************************************
