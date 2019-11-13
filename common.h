@@ -33,7 +33,7 @@
 
 #define SAFE_CALL(call, error)                                                 \
     do {                                                                       \
-        if ((call) == error) {                                                   \
+        if ((call) == error) {                                                 \
             fail("%s", #call);                                                 \
         }                                                                      \
     } while (false)
@@ -99,15 +99,15 @@ static RequestBuffer *request_buffer_new(void) {
     return result;
 }
 
-static bool request_buffer_is_complete(RequestBuffer *buffer) {
-    if (buffer->size < DOUBLE_CRLF_LEN) {
-        return false;
-    }
+static void request_buffer_destroy(RequestBuffer *buffer) { free(buffer); }
 
-    return strstr(buffer->data, "\r\n") != NULL;
+static bool request_buffer_is_complete(RequestBuffer *buffer) {
+    return buffer->size < DOUBLE_CRLF_LEN
+               ? false
+               : strstr(buffer->data, DOUBLE_CRLF) != NULL;
 }
 
-static void request_buffer_destroy(RequestBuffer *buffer) { free(buffer); }
+static void request_buffer_clear(RequestBuffer *buffer) { buffer->size = 0; }
 
 //************************************************************
 
@@ -134,7 +134,7 @@ static void on_recv(void *arg, int fd, uint32_t events) {
     // Принимаем входные данные до тех пор, что recv возвратит 0 или ошибку
     ssize_t nread;
     while ((nread = recv(fd, buffer->data + buffer->size,
-                         REQUEST_BUFFER_CAPACITY, 0)) > 0)
+                         REQUEST_BUFFER_CAPACITY - buffer->size, 0)) > 0)
         buffer->size += nread;
 
     // Клиент оборвал соединение
@@ -155,8 +155,9 @@ static void on_recv(void *arg, int fd, uint32_t events) {
     // Получен полный HTTP запрос от клиента. Теперь регистрируем обработчика
     // событий для отправки данных
     if (request_buffer_is_complete(buffer)) {
-        SAFE_CALL(reactor_reregister(reactor, fd, EPOLLOUT, on_send, NULL), -1);
-        request_buffer_destroy(buffer);
+        request_buffer_clear(buffer);
+        SAFE_CALL(reactor_reregister(reactor, fd, EPOLLOUT, on_send, buffer),
+                  -1);
     }
 }
 
@@ -171,9 +172,7 @@ static void on_send(void *arg, int fd, uint32_t events) {
             strlen(content), content);
 
     SAFE_CALL(send(fd, response, strlen(response), 0), -1);
-    SAFE_CALL(
-        reactor_reregister(reactor, fd, EPOLLIN, on_recv, request_buffer_new()),
-        -1);
+    SAFE_CALL(reactor_reregister(reactor, fd, EPOLLIN, on_recv, arg), -1);
 }
 
 //************************************************************
